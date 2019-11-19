@@ -66,7 +66,7 @@ public class GUI extends JFrame{
         super("Editor De Texto");
         this.ed = n;
         this.copiado = "";
-        server = new RepassaMsg(true);
+        server = new RepassaMsg(visor, true);
         choose = null;
         t = new Thread(server);
         
@@ -246,15 +246,10 @@ public class GUI extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 if(!server.isFlag())
                 {
-                    server = new RepassaMsg(true);
+                    server = new RepassaMsg(visor, true);
                     t = new Thread(server);
                 }
-                
-                if(!t.isAlive())
-                {
-                    t.start();
-                }
-                
+                                
                 if(choose == null)
                 {
                     choose = new JFileChooser();
@@ -263,35 +258,26 @@ public class GUI extends JFrame{
                     String str = "";
                 
                     if(num == JFileChooser.APPROVE_OPTION)
-                    {
-                        try {
-                            FileReader in = new FileReader(choose.getSelectedFile());
-                            ed.getT().getText().clear();
-                            i = in.read();
-                            while(i != -1)
-                            {
-                                str = str.concat(String.valueOf((char)i));
-                                i = in.read();
-                            }
-                            ed.inseretexto(str);
-                            visor.setText(str);
+                    {                        
+                        server.setFile(choose.getSelectedFile());
+                        server.setTxt(visor);
+                        com.setText("");
+                        if(!t.isAlive())
+                        {
+                            t.start();
                         }
-                        catch (FileNotFoundException ex) {}
-                        catch (IOException ex) {}
-                        
-                        server.setNome(choose.getSelectedFile().getName());
-                        server.setTxt(visor.getText());
-                        t.interrupt();
-                        com.setText("");                
                     }
                 }
                 else
                 {
-                    server.setNome(choose.getSelectedFile().getName());
-                    server.setTxt(visor.getText());
-                    t.interrupt();
-                    com.setText("");                                    
-                }
+                    server.setFile(choose.getSelectedFile());
+                    server.setTxt(visor);
+                    com.setText(""); 
+                    if(!t.isAlive())
+                    {
+                        t.start();
+                    }
+                }                
             }
         });
         
@@ -299,7 +285,6 @@ public class GUI extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 server.setFlag(false);
-                t.interrupt();
                 ed.getT().getText().clear();
                 ed.getDesfaz().clear();
                 ed.getRefaz().clear();
@@ -323,15 +308,17 @@ public class GUI extends JFrame{
                     try {
                         FileReader in = new FileReader(choose.getSelectedFile());
                         ed.getT().getText().clear();
-                        //ARRUMAR ISSO AQUI AINDA FALTANDO UMA RESOLUÇÃO DESSE PROBLEMA
                         i = in.read();
                         while(i != -1)
                         {
                             str = str.concat(String.valueOf((char)i));
                             i = in.read();
                         }
-                        ed.inseretexto(str);
-                        visor.setText(str);
+                        if(!str.isEmpty())
+                        {
+                            ed.inseretexto(str);
+                            visor.setText(str);
+                        }
                     }
                     catch (FileNotFoundException ex) {}
                     catch (IOException ex) {}

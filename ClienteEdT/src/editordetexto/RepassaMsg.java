@@ -5,41 +5,45 @@
  */
 package editordetexto;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JTextArea;
 
 /**
  * Coordena o servidor responsável pelo salvamento do arquivo em edição.
  * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
 public class RepassaMsg implements Runnable{
-    private String nome;
-    private String txt;
+    private File file;
+    private JTextArea txt;
     private boolean flag;
 
 /**
  * Construtor da classe Server; inicializa as variáveis nome e txt como strings vazias e flag como "true".
  * @param flag 
  */
-    public RepassaMsg(boolean flag) {
-        this.nome = "";
-        this.txt = "";
+    public RepassaMsg(JTextArea vis, boolean flag) {
+        this.file = null;
+        this.txt = vis;
         this.flag = flag;
     }
 
-    public String getNome() {
-        return nome;
+    public File getFile() {
+        return file;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setFile(File file) {
+        this.file = file;
     }
 
-    public String getTxt() {
+    public JTextArea getTxt() {
         return txt;
     }
 
-    public void setTxt(String txt) {
+    public void setTxt(JTextArea txt) {
         this.txt = txt;
     }
 
@@ -57,20 +61,15 @@ public class RepassaMsg implements Runnable{
     @Override
     public void run() {
         while(flag)
-        {
-            try
-            {
-                while(!Thread.interrupted())
-                {
-                    Thread.sleep(1);
-                }
-            }catch(InterruptedException i){}
-            
+        {            
             try {
-                FileWriter str = new FileWriter(this.nome);
-                str.write(txt);
+                FileWriter str = new FileWriter(file);
+                str.write(txt.getText());
                 str.close();
-            }catch (IOException ex) {}
+                Thread.sleep(1000);
+            }catch (IOException ex) {} catch (InterruptedException ex) {
+                Logger.getLogger(RepassaMsg.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     } 
 }
