@@ -5,7 +5,6 @@
  */
 package serveredt;
 
-import java.awt.GridLayout;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
@@ -22,6 +22,7 @@ import javax.swing.JFrame;
  */
 public class ServerEdT extends JFrame{
     private JButton disc = new JButton("Desconectar");
+    private Vector<String> nomes;
     private ServerSocket server;
     
     public ServerEdT() throws IOException
@@ -33,6 +34,7 @@ public class ServerEdT extends JFrame{
         this.add(disc);
         
         server = new ServerSocket(1234);
+        nomes = new Vector();
     }
     
     /**
@@ -40,6 +42,11 @@ public class ServerEdT extends JFrame{
      */
     public static void main(String[] args) throws IOException {
         ServerEdT edt = new ServerEdT();
+        Vector<RecebeSalvaTxt> clientes = new Vector();
+        String nome = "";
+        RecebeSalvaTxt cliente;
+        Thread t;
+        Boolean achou = false;
         
         while(true){
             System.out.println("Aguardando conexões...");
@@ -49,6 +56,40 @@ public class ServerEdT extends JFrame{
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());            
 
+            System.out.println("Conectado");
+            
+            int op = in.readInt();
+            switch(op)
+            {
+                case 0:
+                    out.writeObject(edt.nomes);
+                    out.flush();
+                    if(edt.nomes.isEmpty()){break;}
+                    nome = in.readUTF();
+                    out.writeUTF(edt.abrir(nome));
+                    out.flush();
+                    cliente = new RecebeSalvaTxt(clientes, nome, in, out);
+                    clientes.add(cliente);
+                    t = new Thread(cliente);
+                    t.start();
+                    break;
+                case 1:
+                    nome = in.readUTF();
+                    for(String i : edt.nomes)
+                        if(nome.equals(i))
+                        {
+                            achou = true;
+                        }
+                    if(!achou)
+                    {
+                        edt.nomes.add(nome);
+                    }
+                    cliente = new RecebeSalvaTxt(clientes, nome, in, out);
+                    clientes.add(cliente);
+                    t = new Thread(cliente);
+                    t.start();
+                    break;
+            }
             /*
                 IDEIA DE SERVER:
             MANTER OS ARQUIVOS ARMAZENADOS NO SERVIDOR
@@ -63,7 +104,7 @@ public class ServerEdT extends JFrame{
         }         
     }
     
-    public static String abrir(String name)
+    public String abrir(String name)
     {
         String str = "";
         int i;

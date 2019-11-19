@@ -11,12 +11,13 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
+import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -34,7 +35,8 @@ import javax.swing.border.TitledBorder;
  */
 public class GUI extends JFrame{
     private JFileChooser choose;
-    private RepassaMsg server;
+    private Client cliente;
+    private RepassaMsg rmsg;
     private Thread t;
     private Lock lock = new ReentrantLock();
     private EditorDeTexto ed;
@@ -61,14 +63,15 @@ public class GUI extends JFrame{
      * Construtor da classe GUI; inicializa as variáveis que definem a interface gráfica do editor, além de definir o que ocorre ao clicar nos botões da mesma.
      * @param n 
      */
-    public GUI(EditorDeTexto n)
+    public GUI(EditorDeTexto n) throws IOException
     {
         super("Editor De Texto");
         this.ed = n;
         this.copiado = "";
-        server = new RepassaMsg(visor, true);
+        cliente = new Client();
+        rmsg = new RepassaMsg(visor, true);
         choose = null;
-        t = new Thread(server);
+        t = new Thread(rmsg);
         
         painel.setLayout(new GridLayout(1,8));
         
@@ -244,10 +247,10 @@ public class GUI extends JFrame{
         save.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!server.isFlag())
+                if(!rmsg.isFlag())
                 {
-                    server = new RepassaMsg(visor, true);
-                    t = new Thread(server);
+                    rmsg = new RepassaMsg(visor, true);
+                    t = new Thread(rmsg);
                 }
                                 
                 if(choose == null)
@@ -259,8 +262,8 @@ public class GUI extends JFrame{
                 
                     if(num == JFileChooser.APPROVE_OPTION)
                     {                        
-                        server.setFile(choose.getSelectedFile());
-                        server.setTxt(visor);
+                        rmsg.setFile(choose.getSelectedFile());
+                        rmsg.setTxt(visor);
                         com.setText("");
                         if(!t.isAlive())
                         {
@@ -270,8 +273,8 @@ public class GUI extends JFrame{
                 }
                 else
                 {
-                    server.setFile(choose.getSelectedFile());
-                    server.setTxt(visor);
+                    rmsg.setFile(choose.getSelectedFile());
+                    rmsg.setTxt(visor);
                     com.setText(""); 
                     if(!t.isAlive())
                     {
@@ -284,7 +287,7 @@ public class GUI extends JFrame{
         disconnect.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                server.setFlag(false);
+                rmsg.setFlag(false);
                 ed.getT().getText().clear();
                 ed.getDesfaz().clear();
                 ed.getRefaz().clear();
@@ -298,22 +301,19 @@ public class GUI extends JFrame{
         open.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                choose = new JFileChooser();
-                int num = choose.showOpenDialog(open);
-                int i;
-                String str = "";
-                
-                if(num == JFileChooser.APPROVE_OPTION)
-                {
-                    try {
-                        FileReader in = new FileReader(choose.getSelectedFile());
+                String str = "";   
+                try {
+                        cliente.out.writeInt(0);
+                        cliente.out.flush();
+                        Vector<String> nomes = (Vector)cliente.in.readObject();
+                        if (nomes.isEmpty()){return;}
+                        JComboBox box = new JComboBox(nomes);
+                        box.setVisible(true);
+                        str = cliente.in.readUTF();
+                        
                         ed.getT().getText().clear();
-                        i = in.read();
-                        while(i != -1)
-                        {
-                            str = str.concat(String.valueOf((char)i));
-                            i = in.read();
-                        }
+                        ed.getRefaz().clear();
+                        ed.getDesfaz().clear();
                         if(!str.isEmpty())
                         {
                             ed.inseretexto(str);
@@ -321,8 +321,7 @@ public class GUI extends JFrame{
                         }
                     }
                     catch (FileNotFoundException ex) {}
-                    catch (IOException ex) {}
-                }
+                    catch (IOException | ClassNotFoundException ex) {}
             }
         });
     }
