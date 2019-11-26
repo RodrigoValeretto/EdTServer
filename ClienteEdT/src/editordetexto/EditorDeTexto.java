@@ -9,9 +9,12 @@
  */
 package editordetexto;
 
+import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 
 /**
@@ -225,11 +228,14 @@ public class EditorDeTexto extends JFrame{
         int num;
         String n;
         String op;
-        GUI g = new GUI(e);
-        
-        g.setVisible(true);
-        
-        
+        GUI g;
+        try {
+            g = new GUI(e);
+            g.setVisible(true);
+        } catch (IOException ex) {
+            Logger.getLogger(EditorDeTexto.class.getName()).log(Level.SEVERE, null, ex);
+        }
+          
         while(true)
         {
             System.out.println("---------------------------------------------");

@@ -1,1 +1,4 @@
 texto.txt
+teste4085.txt
+nomemaneiro.txt
+mamaemandou.txt

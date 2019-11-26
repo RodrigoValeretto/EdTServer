@@ -29,6 +29,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
@@ -77,9 +78,7 @@ public class GUI extends JFrame {
         this.ed = n;
         this.copiado = "";
         cliente = new Client();
-        rmsg = new RecebeMsg(cliente.out, visor, true);
         choose = null;
-        t = new Thread(rmsg);
 
         painel.setLayout(new GridLayout(1, 8));
 
@@ -131,8 +130,14 @@ public class GUI extends JFrame {
                         str = str.concat(String.valueOf(i));
                     }
                     visor.setText(str);
+                    if (abriu) {
+                        cliente.out.writeUTF(visor.getText());
+                        cliente.out.flush();
+                    }
                 } catch (NullPointerException f) {
                     System.out.println(f.getMessage());
+                } catch (IOException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
                     lock.unlock();
                 }
@@ -151,8 +156,14 @@ public class GUI extends JFrame {
                         str = str.concat(String.valueOf(i));
                     }
                     visor.setText(str);
+                    if (abriu) {
+                        cliente.out.writeUTF(visor.getText());
+                        cliente.out.flush();
+                    }
                 } catch (NullPointerException f) {
                     System.out.println(f.getMessage());
+                } catch (IOException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
                     lock.unlock();
                 }
@@ -163,50 +174,66 @@ public class GUI extends JFrame {
         insert.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String str = "";
-                lock.lock();
                 try {
-                    ed.inseretexto(com.getText());
-                    ed.inserealteracao(ed.getDesfaz(), com.getText(), "1");
-                    ed.getRefaz().clear();
-                } catch (NullPointerException f) {
-                    System.out.println(f.getMessage());
-                } finally {
-                    lock.unlock();
-                }
+                    String str = "";
+                    lock.lock();
+                    try {
+                        ed.inseretexto(com.getText());
+                        ed.inserealteracao(ed.getDesfaz(), com.getText(), "1");
+                        ed.getRefaz().clear();
+                    } catch (NullPointerException f) {
+                        System.out.println(f.getMessage());
+                    } finally {
+                        lock.unlock();
+                    }
 
-                for (char i : ed.getT().getText()) {
-                    str = str.concat(String.valueOf(i));
+                    for (char i : ed.getT().getText()) {
+                        str = str.concat(String.valueOf(i));
+                    }
+                    visor.setText(str);
+                    if (abriu) {
+                        cliente.out.writeUTF(visor.getText());
+                        cliente.out.flush();
+                    }
+                    com.setText("");
+                } catch (IOException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                visor.setText(str);
-                com.setText("");
             }
         });
 
         remove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String str = "";
-                lock.lock();
                 try {
-                    if (!com.getText().isEmpty()) {
-                        String aux = ed.removetexto(Integer.parseInt(com.getText()));
-                        ed.inserealteracao(ed.getDesfaz(), aux, "2");
-                        ed.getRefaz().clear();
-                    } else {
-                        throw new InvalidPropertiesFormatException("\nNenhum valor digitado!\n");
+                    String str = "";
+                    lock.lock();
+                    try {
+                        if (!com.getText().isEmpty()) {
+                            String aux = ed.removetexto(Integer.parseInt(com.getText()));
+                            ed.inserealteracao(ed.getDesfaz(), aux, "2");
+                            ed.getRefaz().clear();
+                        } else {
+                            throw new InvalidPropertiesFormatException("\nNenhum valor digitado!\n");
+                        }
+                    } catch (InvalidPropertiesFormatException | NumberFormatException f) {
+                        System.out.println(f.getMessage());
+                    } finally {
+                        lock.unlock();
                     }
-                } catch (InvalidPropertiesFormatException | NumberFormatException f) {
-                    System.out.println(f.getMessage());
-                } finally {
-                    lock.unlock();
-                }
 
-                for (char i : ed.getT().getText()) {
-                    str = str.concat(String.valueOf(i));
+                    for (char i : ed.getT().getText()) {
+                        str = str.concat(String.valueOf(i));
+                    }
+                    visor.setText(str);
+                    if (abriu) {
+                        cliente.out.writeUTF(visor.getText());
+                        cliente.out.flush();
+                    }
+                    com.setText("");
+                } catch (IOException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                visor.setText(str);
-                com.setText("");
             }
         });
 
@@ -233,8 +260,14 @@ public class GUI extends JFrame {
                     recortar();
                     ed.getRefaz().clear();
                     ed.getDesfaz().clear();
+                    if (abriu) {
+                        cliente.out.writeUTF(visor.getText());
+                        cliente.out.flush();
+                    }
                 } catch (NullPointerException ex) {
                     System.out.println(ex.getMessage());
+                } catch (IOException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
                     lock.unlock();
                 }
@@ -249,6 +282,12 @@ public class GUI extends JFrame {
                     colar();
                     ed.getRefaz().clear();
                     ed.getDesfaz().clear();
+                    if (abriu) {
+                        cliente.out.writeUTF(visor.getText());
+                        cliente.out.flush();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
                     lock.unlock();
                 }
@@ -258,43 +297,78 @@ public class GUI extends JFrame {
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(abriu)
+                if (abriu) {
                     return;
+                }
                 try {
                     Vector<String> nomes = (Vector) cliente.in.readObject();
                     cliente.out.writeInt(1);
                     cliente.out.flush();
-                    String nome = com.getText();
-                    cliente.out.writeUTF(nome);
-                    cliente.out.flush();
-                    cliente.out.writeUTF(visor.getText());
-                    cliente.out.flush();
+                    JFrame janela = new JFrame("Digite o nome do arquivo que deseja salvar:");
+                    JButton salvar = new JButton("Salvar");
+                    JTextField nome = new JTextField(25);
+                    janela.setLayout(new BorderLayout());
+                    janela.add(nome, BorderLayout.NORTH);
+                    janela.add(salvar, BorderLayout.SOUTH);
+                    janela.pack();
+                    janela.setVisible(true);
+                    salvar.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                cliente.out.writeUTF(nome.getText());
+                                cliente.out.flush();
+                                cliente.out.writeUTF(visor.getText());
+                                cliente.out.flush();
+                                rmsg = new RecebeMsg(ed, cliente.in, visor);
+                                t = new Thread(rmsg);
+                                t.start();
+                                abriu = true;
+                                janela.setVisible(false);
+                            } catch (IOException ex) {
+                                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    });
                 } catch (IOException ex) {
                 } catch (ClassNotFoundException ex) {
                 }
-                abriu = true;
             }
         });
 
         disconnect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                rmsg.setFlag(false);
-                ed.getT().getText().clear();
-                ed.getDesfaz().clear();
-                ed.getRefaz().clear();
-                copiado = "";
-                visor.setText("");
-                com.setText("");
-                choose = null;
+                try {
+                    ed.getT().getText().clear();
+                    ed.getDesfaz().clear();
+                    ed.getRefaz().clear();
+                    copiado = "";
+                    visor.setText("");
+                    com.setText("");
+                    choose = null;
+                    abriu = false;
+                    t.interrupt();
+                    cliente.in.close();
+                    cliente.out.close();
+                    cliente.socket.close();
+                } catch (IOException ex) {
+                } finally {
+                    try {
+                        cliente = new Client();
+                    } catch (IOException ex) {
+                        Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         });
 
         open.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(abriu)
+                if (abriu) {
                     return;
+                }
                 try {
                     Vector<String> nomes = (Vector) cliente.in.readObject();
                     if (nomes.isEmpty()) {
@@ -331,16 +405,19 @@ public class GUI extends JFrame {
                                     visor.setText(str);
                                 }
                                 janela.setVisible(false);
+                                rmsg = new RecebeMsg(ed, cliente.in, visor);
+                                t = new Thread(rmsg);
+                                t.start();
+                                abriu = true;
                             } catch (IOException ex) {
                                 Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
-                        
+
                     });
                 } catch (FileNotFoundException ex) {
                 } catch (IOException | ClassNotFoundException ex) {
                 }
-                abriu = true;
             }
         });
     }

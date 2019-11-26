@@ -40,7 +40,7 @@ public class RepassaSalvaTxt implements Runnable{
                 String txt = input.readUTF();
                 for(RepassaSalvaTxt i : clientes)
                     {
-                        if(i.nome == this.nome)
+                        if(i.nome.equals(this.nome) && (i.input != this.input))
                         {
                             i.output.writeUTF(txt);
                             i.output.flush();

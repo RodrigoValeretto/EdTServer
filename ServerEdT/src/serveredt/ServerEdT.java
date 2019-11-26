@@ -5,6 +5,7 @@
  */
 package serveredt;
 
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.EOFException;
@@ -39,21 +40,26 @@ public class ServerEdT extends JFrame {
 
         server = new ServerSocket(1234);
         nomes = new Vector();
+        
+        disc.addActionListener(new ActionListener(){
+        //TERMINAR ESSA PORRA NO TOMEZINHO
+        });
     }
 
     public void EscreveNomesNoReg() {
         try {
             BufferedWriter fp = new BufferedWriter(new FileWriter("ArquivosDoServer.txt"));
-            for (int i = 0; i < this.nomes.size(); i++) {
-                fp.append(this.nomes.get(i) + "\n");
-                fp.close();
+            for (String i : this.nomes) {
+                fp.append(i + "\n");
             }
+            fp.close();
         } catch (IOException ex) {
         }
     }
 
     public void LeNomesDoReg() {
         try {
+            this.nomes.clear();
             BufferedReader fp = new BufferedReader(new FileReader("ArquivosDoServer.txt"));
             String str = fp.readLine();
             while (str != null) {
@@ -75,10 +81,12 @@ public class ServerEdT extends JFrame {
         String nome = "";
         RepassaSalvaTxt cliente;
         Thread t;
-        Boolean achou = false;
-        edt.LeNomesDoReg();
+        boolean achou = false;
 
         while (true) {
+            edt.LeNomesDoReg();
+            achou = false;
+            
             System.out.println("Aguardando conexões...");
 
             Socket socket = edt.server.accept();

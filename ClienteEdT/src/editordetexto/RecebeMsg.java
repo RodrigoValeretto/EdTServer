@@ -5,61 +5,53 @@
  */
 package editordetexto;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
 
 /**
  * Coordena o servidor responsável pelo salvamento do arquivo em edição.
+ *
  * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
-public class RecebeMsg implements Runnable{
-    private ObjectOutputStream out
-    private JTextArea txt;
-    private boolean flag;
+public class RecebeMsg implements Runnable {
 
-/**
- * Construtor da classe Server; inicializa as variáveis nome e txt como strings vazias e flag como "true".
- * @param flag 
- */
-    public RecebeMsg(ObjectOutputStream out,JTextArea vis, boolean flag) {
-        this.out = out;
-        this.txt = vis;
-        this.flag = flag;
-    }
+    private EditorDeTexto ed;
+    private ObjectInputStream in;
+    private JTextArea visor;
 
-    public JTextArea getTxt() {
-        return txt;
-    }
-
-    public void setTxt(JTextArea txt) {
-        this.txt = txt;
-    }
-
-    public boolean isFlag() {
-        return flag;
-    }
-
-    public void setFlag(boolean flag) {
-        this.flag = flag;
-    }
-    
     /**
-     * Implementação da função da interface Runnable; controla o comportamento da thread durante a execução do programa. Quando ocorre interrupção, salva o texto num arquivo e espera até que um novo seja salvo.
+     * Construtor da classe Server; inicializa as variáveis nome e txt como
+     * strings vazias e flag como "true".
+     *
+     * @param flag
+     */
+    public RecebeMsg(EditorDeTexto ed, ObjectInputStream in, JTextArea visor) {
+        this.ed = ed;
+        this.in = in;
+        this.visor = visor;
+    }
+
+    /**
+     * Implementação da função da interface Runnable; controla o comportamento
+     * da thread durante a execução do programa. Quando ocorre interrupção,
+     * salva o texto num arquivo e espera até que um novo seja salvo.
      */
     @Override
     public void run() {
-        while(flag)
-        {            
+        while (!Thread.interrupted()) {
             try {
-                
-                Thread.sleep(1000);
-            }catch (IOException ex) {} catch (InterruptedException ex) {
+                String str = in.readUTF();
+                ed.getT().getText().clear();
+                ed.getRefaz().clear();
+                ed.getDesfaz().clear();
+                ed.inseretexto(str);
+                visor.setText(str);
+            } catch (IOException ex) {
                 Logger.getLogger(RecebeMsg.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-    } 
+    }
 }
