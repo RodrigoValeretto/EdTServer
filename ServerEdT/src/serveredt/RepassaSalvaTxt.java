@@ -17,14 +17,14 @@ import java.util.logging.Logger;
  *
  * @author rodrigo
  */
-public class RecebeSalvaTxt implements Runnable{
-    Vector <RecebeSalvaTxt> clientes;
+public class RepassaSalvaTxt implements Runnable{
+    Vector <RepassaSalvaTxt> clientes;
     private String nome;
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
     
-    public RecebeSalvaTxt(Vector <RecebeSalvaTxt> clientes, String nome, ObjectInputStream input, ObjectOutputStream output)
+    public RepassaSalvaTxt(Vector <RepassaSalvaTxt> clientes, String nome, ObjectInputStream input, ObjectOutputStream output)
     {
         this.clientes = clientes;
         this.nome = nome;
@@ -38,7 +38,7 @@ public class RecebeSalvaTxt implements Runnable{
         {            
             try {
                 String txt = input.readUTF();
-                for(RecebeSalvaTxt i : clientes)
+                for(RepassaSalvaTxt i : clientes)
                     {
                         if(i.nome == this.nome)
                         {
@@ -57,6 +57,7 @@ public class RecebeSalvaTxt implements Runnable{
                     this.input.close();
                     this.output.close();
                 }catch(IOException ex1){}
+                finally{return;}
             } catch (InterruptedException ex) {}
         } 
     }

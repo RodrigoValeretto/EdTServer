@@ -16,6 +16,9 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -31,12 +34,15 @@ import javax.swing.border.TitledBorder;
 
 /**
  * Classe correspondente a interface gráfica do editor de texto.
+ *
  * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
-public class GUI extends JFrame{
+public class GUI extends JFrame {
+
+    private boolean abriu = false;
     private JFileChooser choose;
     private Client cliente;
-    private RepassaMsg rmsg;
+    private RecebeMsg rmsg;
     private Thread t;
     private Lock lock = new ReentrantLock();
     private EditorDeTexto ed;
@@ -58,24 +64,26 @@ public class GUI extends JFrame{
     private JMenuItem save = new JMenuItem("Salvar");
     private JMenuItem open = new JMenuItem("Abrir");
     private JMenuItem disconnect = new JMenuItem("Desconectar");
-    
+
     /**
-     * Construtor da classe GUI; inicializa as variáveis que definem a interface gráfica do editor, além de definir o que ocorre ao clicar nos botões da mesma.
-     * @param n 
+     * Construtor da classe GUI; inicializa as variáveis que definem a interface
+     * gráfica do editor, além de definir o que ocorre ao clicar nos botões da
+     * mesma.
+     *
+     * @param n
      */
-    public GUI(EditorDeTexto n) throws IOException
-    {
+    public GUI(EditorDeTexto n) throws IOException {
         super("Editor De Texto");
         this.ed = n;
         this.copiado = "";
         cliente = new Client();
-        rmsg = new RepassaMsg(visor, true);
+        rmsg = new RecebeMsg(cliente.out, visor, true);
         choose = null;
         t = new Thread(rmsg);
-        
-        painel.setLayout(new GridLayout(1,8));
-        
-        this.setSize(1280,720);
+
+        painel.setLayout(new GridLayout(1, 8));
+
+        this.setSize(1280, 720);
         this.setLayout(new BorderLayout());
 
         painel.add(undo);
@@ -87,204 +95,188 @@ public class GUI extends JFrame{
         painel.add(paste);
         painel.add(save);
         painel.add(disconnect);
-        
+
         visor.setEditable(false);
         visor.setLineWrap(true);
         scroll.setBorder(new TitledBorder(new EtchedBorder(), "Texto"));
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scroll.setPreferredSize(new Dimension(640,400));
-        
-        
+        scroll.setPreferredSize(new Dimension(640, 400));
+
         com.setEditable(true);
         com.setLineWrap(true);
         scroll2.setBorder(new TitledBorder(new EtchedBorder(), "Comandos"));
         scroll2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scroll2.setPreferredSize(new Dimension(640,320));
-        
+        scroll2.setPreferredSize(new Dimension(640, 320));
+
         barra.add(file);
         file.add(open);
         file.add(save);
         file.add(disconnect);
-        
+
         this.setJMenuBar(barra);
         this.add(painel, BorderLayout.SOUTH);
         this.add(scroll, BorderLayout.CENTER);
         this.add(scroll2, BorderLayout.NORTH);
-        
+
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        undo.addActionListener(new ActionListener(){
+
+        undo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent a) {
                 String str = "";
                 lock.lock();
-                try
-                {
+                try {
                     ed.desfazer();
-                    for(char i : ed.getT().getText())
+                    for (char i : ed.getT().getText()) {
                         str = str.concat(String.valueOf(i));
+                    }
                     visor.setText(str);
-                }catch(NullPointerException f)
-                {
+                } catch (NullPointerException f) {
                     System.out.println(f.getMessage());
+                } finally {
+                    lock.unlock();
                 }
-                finally{lock.unlock();}
 
             }
         });
-        
-        redo.addActionListener(new ActionListener(){
+
+        redo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent a) {
                 String str = "";
                 lock.lock();
-                try
-                {
+                try {
                     ed.refazer();
-                    for(char i : ed.getT().getText())
+                    for (char i : ed.getT().getText()) {
                         str = str.concat(String.valueOf(i));
+                    }
                     visor.setText(str);
-                }catch(NullPointerException f)
-                {
+                } catch (NullPointerException f) {
                     System.out.println(f.getMessage());
-                }finally{lock.unlock();}
+                } finally {
+                    lock.unlock();
+                }
 
             }
         });
-        
-        insert.addActionListener(new ActionListener(){
+
+        insert.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String str = "";
                 lock.lock();
-                try
-                {
+                try {
                     ed.inseretexto(com.getText());
-                    ed.inserealteracao(ed.getDesfaz(),com.getText(), "1");
+                    ed.inserealteracao(ed.getDesfaz(), com.getText(), "1");
                     ed.getRefaz().clear();
-                }catch(NullPointerException f)
-                {
+                } catch (NullPointerException f) {
                     System.out.println(f.getMessage());
-                }finally{lock.unlock();}
+                } finally {
+                    lock.unlock();
+                }
 
-                for(char i : ed.getT().getText())
+                for (char i : ed.getT().getText()) {
                     str = str.concat(String.valueOf(i));
+                }
                 visor.setText(str);
                 com.setText("");
             }
         });
-       
-        remove.addActionListener(new ActionListener(){
+
+        remove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String str = "";
                 lock.lock();
-                try 
-                {
-                    if(!com.getText().isEmpty())
-                    {   
+                try {
+                    if (!com.getText().isEmpty()) {
                         String aux = ed.removetexto(Integer.parseInt(com.getText()));
-                        ed.inserealteracao(ed.getDesfaz(),aux, "2");
+                        ed.inserealteracao(ed.getDesfaz(), aux, "2");
                         ed.getRefaz().clear();
-                    }else{throw new InvalidPropertiesFormatException("\nNenhum valor digitado!\n");}
-                }catch(InvalidPropertiesFormatException | NumberFormatException f)
-                {
+                    } else {
+                        throw new InvalidPropertiesFormatException("\nNenhum valor digitado!\n");
+                    }
+                } catch (InvalidPropertiesFormatException | NumberFormatException f) {
                     System.out.println(f.getMessage());
-                }finally{lock.unlock();}
-                
-                for(char i : ed.getT().getText())
+                } finally {
+                    lock.unlock();
+                }
+
+                for (char i : ed.getT().getText()) {
                     str = str.concat(String.valueOf(i));
+                }
                 visor.setText(str);
                 com.setText("");
             }
         });
 
-        
-        copy.addActionListener(new ActionListener(){
+        copy.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 lock.lock();
-                try
-                {
+                try {
                     copiar();
-                }catch(NullPointerException ex)
-                {
+                } catch (NullPointerException ex) {
                     System.out.println(ex.getMessage());
-                }finally{lock.unlock();}
+                } finally {
+                    lock.unlock();
+                }
 
             }
         });
-        
-        cut.addActionListener(new ActionListener(){
+
+        cut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 lock.lock();
-                try
-                {
+                try {
                     recortar();
                     ed.getRefaz().clear();
                     ed.getDesfaz().clear();
-                }catch(NullPointerException ex)
-                {
+                } catch (NullPointerException ex) {
                     System.out.println(ex.getMessage());
-                }finally{lock.unlock();}
+                } finally {
+                    lock.unlock();
+                }
             }
         });
 
-        paste.addActionListener(new ActionListener(){
+        paste.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 lock.lock();
-                try
-                {
+                try {
                     colar();
                     ed.getRefaz().clear();
                     ed.getDesfaz().clear();
-                }finally{lock.unlock();}
+                } finally {
+                    lock.unlock();
+                }
             }
         });
 
-        save.addActionListener(new ActionListener(){
+        save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!rmsg.isFlag())
-                {
-                    rmsg = new RepassaMsg(visor, true);
-                    t = new Thread(rmsg);
+                if(abriu)
+                    return;
+                try {
+                    Vector<String> nomes = (Vector) cliente.in.readObject();
+                    cliente.out.writeInt(1);
+                    cliente.out.flush();
+                    String nome = com.getText();
+                    cliente.out.writeUTF(nome);
+                    cliente.out.flush();
+                    cliente.out.writeUTF(visor.getText());
+                    cliente.out.flush();
+                } catch (IOException ex) {
+                } catch (ClassNotFoundException ex) {
                 }
-                                
-                if(choose == null)
-                {
-                    choose = new JFileChooser();
-                    int num = choose.showSaveDialog(save);
-                    int i;
-                    String str = "";
-                
-                    if(num == JFileChooser.APPROVE_OPTION)
-                    {                        
-                        rmsg.setFile(choose.getSelectedFile());
-                        rmsg.setTxt(visor);
-                        com.setText("");
-                        if(!t.isAlive())
-                        {
-                            t.start();
-                        }
-                    }
-                }
-                else
-                {
-                    rmsg.setFile(choose.getSelectedFile());
-                    rmsg.setTxt(visor);
-                    com.setText(""); 
-                    if(!t.isAlive())
-                    {
-                        t.start();
-                    }
-                }                
+                abriu = true;
             }
         });
-        
-        disconnect.addActionListener(new ActionListener(){
+
+        disconnect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 rmsg.setFlag(false);
@@ -297,81 +289,114 @@ public class GUI extends JFrame{
                 choose = null;
             }
         });
-        
-        open.addActionListener(new ActionListener(){
+
+        open.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String str = "";   
+                if(abriu)
+                    return;
                 try {
-                        cliente.out.writeInt(0);
-                        cliente.out.flush();
-                        Vector<String> nomes = (Vector)cliente.in.readObject();
-                        if (nomes.isEmpty()){return;}
-                        JComboBox box = new JComboBox(nomes);
-                        box.setVisible(true);
-                        str = cliente.in.readUTF();
-                        
-                        ed.getT().getText().clear();
-                        ed.getRefaz().clear();
-                        ed.getDesfaz().clear();
-                        if(!str.isEmpty())
-                        {
-                            ed.inseretexto(str);
-                            visor.setText(str);
-                        }
+                    Vector<String> nomes = (Vector) cliente.in.readObject();
+                    if (nomes.isEmpty()) {
+                        return;
                     }
-                    catch (FileNotFoundException ex) {}
-                    catch (IOException | ClassNotFoundException ex) {}
+                    JFrame janela = new JFrame("Escolha o arquivo");
+                    JButton abrir = new JButton("Abrir");
+                    DefaultComboBoxModel model = new DefaultComboBoxModel(nomes.toArray());
+                    JComboBox box = new JComboBox();
+                    box.setModel(model);
+                    janela.setLayout(new BorderLayout());
+                    janela.add(box, BorderLayout.NORTH);
+                    janela.add(abrir, BorderLayout.SOUTH);
+                    janela.setSize(200, 80);
+                    janela.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+                    janela.setVisible(true);
+
+                    abrir.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e1) {
+                            String str = "";
+                            try {
+                                cliente.out.writeInt(0);
+                                cliente.out.flush();
+                                cliente.out.writeUTF(box.getSelectedItem().toString());
+                                cliente.out.flush();
+                                str = cliente.in.readUTF();
+
+                                ed.getT().getText().clear();
+                                ed.getRefaz().clear();
+                                ed.getDesfaz().clear();
+                                if (!str.isEmpty()) {
+                                    ed.inseretexto(str);
+                                    visor.setText(str);
+                                }
+                                janela.setVisible(false);
+                            } catch (IOException ex) {
+                                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        
+                    });
+                } catch (FileNotFoundException ex) {
+                } catch (IOException | ClassNotFoundException ex) {
+                }
+                abriu = true;
             }
         });
     }
-    
+
     /**
      * Copia um texto selecionado no visor para uma variável da classe GUI.
+     *
      * @throws NullPointerException
      */
-    public void copiar(){
-        if(visor.getSelectedText() == null)
+    public void copiar() {
+        if (visor.getSelectedText() == null) {
             throw new NullPointerException("Nenhum Texto Selecionado");
+        }
 
-        this.copiado = visor.getSelectedText();   
+        this.copiado = visor.getSelectedText();
         visor.select(0, 0);
     }
-    
+
     /**
      * Recorta um texto selecionado no visor para uma variável da classe GUI.
+     *
      * @throws NullPointerException
      */
-    public void recortar(){
-        if(visor.getSelectedText() == null)
+    public void recortar() {
+        if (visor.getSelectedText() == null) {
             throw new NullPointerException("Nenhum Texto Selecionado");
-        
+        }
+
         String str = "";
         this.copiado = visor.getSelectedText();
         int ini = visor.getSelectionStart();
         int fim = visor.getSelectionEnd();
-        
-        for(int i = ini; i < fim; i++)
+
+        for (int i = ini; i < fim; i++) {
             this.ed.getT().getText().remove(ini);
-        
-        for(char i : this.ed.getT().getText())
+        }
+
+        for (char i : this.ed.getT().getText()) {
             str = str.concat(String.valueOf(i));
-            
+        }
+
         visor.setText("");
         visor.setText(str);
         visor.select(0, 0);
     }
-    
+
     /**
      * Cola uma string salva na área de transferência no fim do texto.
      */
-    public void colar(){
+    public void colar() {
         String str = this.visor.getText();
-        
+
         str = str.concat(this.copiado);
-        
+
         ed.inseretexto(this.copiado);
-        
+
         visor.setText("");
         visor.setText(str);
     }

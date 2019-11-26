@@ -6,8 +6,8 @@
 package editordetexto;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
@@ -16,8 +16,8 @@ import javax.swing.JTextArea;
  * Coordena o servidor responsável pelo salvamento do arquivo em edição.
  * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
-public class RepassaMsg implements Runnable{
-    private File file;
+public class RecebeMsg implements Runnable{
+    private ObjectOutputStream out
     private JTextArea txt;
     private boolean flag;
 
@@ -25,18 +25,10 @@ public class RepassaMsg implements Runnable{
  * Construtor da classe Server; inicializa as variáveis nome e txt como strings vazias e flag como "true".
  * @param flag 
  */
-    public RepassaMsg(JTextArea vis, boolean flag) {
-        this.file = null;
+    public RecebeMsg(ObjectOutputStream out,JTextArea vis, boolean flag) {
+        this.out = out;
         this.txt = vis;
         this.flag = flag;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
     }
 
     public JTextArea getTxt() {
@@ -63,12 +55,10 @@ public class RepassaMsg implements Runnable{
         while(flag)
         {            
             try {
-                FileWriter str = new FileWriter(file);
-                str.write(txt.getText());
-                str.close();
+                
                 Thread.sleep(1000);
             }catch (IOException ex) {} catch (InterruptedException ex) {
-                Logger.getLogger(RepassaMsg.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(RecebeMsg.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     } 
