@@ -5,6 +5,7 @@
  */
 package serveredt;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,6 +19,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
@@ -30,6 +33,8 @@ public class ServerEdT extends JFrame {
     private JButton disc = new JButton("Desconectar");
     private Vector<String> nomes;
     private ServerSocket server;
+    private Vector<RepassaSalvaTxt> clientes;
+    private Vector<Thread> ts;
 
     public ServerEdT() throws IOException {
         super("Servidor EdT");
@@ -37,12 +42,33 @@ public class ServerEdT extends JFrame {
         this.setVisible(true);
         this.setSize(225, 75);
         this.add(disc);
+        this.clientes = new Vector();
+        this.ts = new Vector();
 
         server = new ServerSocket(1234);
         nomes = new Vector();
         
         disc.addActionListener(new ActionListener(){
-        //TERMINAR ESSA PORRA NO TOMEZINHO
+            @Override
+            public void actionPerformed(ActionEvent e){
+                for(RepassaSalvaTxt i : clientes)
+                {
+                    try {
+                        i.getInput().close();
+                        i.getOutput().close();
+                        i.getSocket().close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ServerEdT.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                
+                for(Thread i : ts)
+                {
+                    i.interrupt();
+                }
+                clientes.clear();
+                ts.clear();
+            }
         });
     }
 
@@ -77,7 +103,6 @@ public class ServerEdT extends JFrame {
      */
     public static void main(String[] args) throws IOException {
         ServerEdT edt = new ServerEdT();
-        Vector<RepassaSalvaTxt> clientes = new Vector();
         String nome = "";
         RepassaSalvaTxt cliente;
         Thread t;
@@ -113,8 +138,8 @@ public class ServerEdT extends JFrame {
                     }
                     out.writeUTF(edt.abrir(nome));
                     out.flush();
-                    cliente = new RepassaSalvaTxt(clientes, nome, in, out);
-                    clientes.add(cliente);
+                    cliente = new RepassaSalvaTxt(edt.clientes, nome, socket, in, out);
+                    edt.clientes.add(cliente);
                     t = new Thread(cliente);
                     t.start();
                     break;
@@ -128,9 +153,10 @@ public class ServerEdT extends JFrame {
                     if (!achou) {
                         edt.nomes.add(nome);
                     }
-                    cliente = new RepassaSalvaTxt(clientes, nome, in, out);
-                    clientes.add(cliente);
+                    cliente = new RepassaSalvaTxt(edt.clientes, nome, socket, in, out);
+                    edt.clientes.add(cliente);
                     t = new Thread(cliente);
+                    edt.ts.add(t);
                     t.start();
                     break;
                     

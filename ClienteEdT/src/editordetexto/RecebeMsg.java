@@ -21,6 +21,7 @@ public class RecebeMsg implements Runnable {
     private EditorDeTexto ed;
     private ObjectInputStream in;
     private JTextArea visor;
+    private boolean abriu;
 
     /**
      * Construtor da classe Server; inicializa as variáveis nome e txt como
@@ -28,10 +29,11 @@ public class RecebeMsg implements Runnable {
      *
      * @param flag
      */
-    public RecebeMsg(EditorDeTexto ed, ObjectInputStream in, JTextArea visor) {
+    public RecebeMsg(EditorDeTexto ed, ObjectInputStream in, JTextArea visor, boolean abriu) {
         this.ed = ed;
         this.in = in;
         this.visor = visor;
+        this.abriu = abriu;
     }
 
     /**
@@ -50,7 +52,10 @@ public class RecebeMsg implements Runnable {
                 ed.inseretexto(str);
                 visor.setText(str);
             } catch (IOException ex) {
-                Logger.getLogger(RecebeMsg.class.getName()).log(Level.SEVERE, null, ex);
+                
+                //ARRUMAR ESSA PARTE DE ABRIU AQUI PARA O DISCONNECT DO SERVIDOR
+                this.abriu = false;
+                return;
             }
         }
     }

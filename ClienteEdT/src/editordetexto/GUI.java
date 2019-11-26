@@ -77,7 +77,6 @@ public class GUI extends JFrame {
         super("Editor De Texto");
         this.ed = n;
         this.copiado = "";
-        cliente = new Client();
         choose = null;
 
         painel.setLayout(new GridLayout(1, 8));
@@ -301,6 +300,7 @@ public class GUI extends JFrame {
                     return;
                 }
                 try {
+                    cliente = new Client();
                     Vector<String> nomes = (Vector) cliente.in.readObject();
                     cliente.out.writeInt(1);
                     cliente.out.flush();
@@ -320,7 +320,7 @@ public class GUI extends JFrame {
                                 cliente.out.flush();
                                 cliente.out.writeUTF(visor.getText());
                                 cliente.out.flush();
-                                rmsg = new RecebeMsg(ed, cliente.in, visor);
+                                rmsg = new RecebeMsg(ed, cliente.in, visor, abriu);
                                 t = new Thread(rmsg);
                                 t.start();
                                 abriu = true;
@@ -353,13 +353,13 @@ public class GUI extends JFrame {
                     cliente.out.close();
                     cliente.socket.close();
                 } catch (IOException ex) {
-                } finally {
+                } /*finally {
                     try {
                         cliente = new Client();
                     } catch (IOException ex) {
                         Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
+                }*/
             }
         });
 
@@ -370,6 +370,7 @@ public class GUI extends JFrame {
                     return;
                 }
                 try {
+                    cliente = new Client();
                     Vector<String> nomes = (Vector) cliente.in.readObject();
                     if (nomes.isEmpty()) {
                         return;
@@ -405,7 +406,7 @@ public class GUI extends JFrame {
                                     visor.setText(str);
                                 }
                                 janela.setVisible(false);
-                                rmsg = new RecebeMsg(ed, cliente.in, visor);
+                                rmsg = new RecebeMsg(ed, cliente.in, visor, abriu);
                                 t = new Thread(rmsg);
                                 t.start();
                                 abriu = true;
