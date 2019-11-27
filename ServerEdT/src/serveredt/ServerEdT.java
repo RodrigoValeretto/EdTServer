@@ -144,7 +144,9 @@ public class ServerEdT extends JFrame {
                     t.start();
                     break;
                 case 1:
-                    nome = in.readUTF();
+                    try{
+                        nome = in.readUTF();
+                    }catch(EOFException ex){break;}
                     for (String i : edt.nomes) {
                         if (nome.equals(i)) {
                             achou = true;

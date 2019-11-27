@@ -7,8 +7,7 @@ package editordetexto;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JMenu;
 import javax.swing.JTextArea;
 
 /**
@@ -21,7 +20,7 @@ public class RecebeMsg implements Runnable {
     private EditorDeTexto ed;
     private ObjectInputStream in;
     private JTextArea visor;
-    private boolean abriu;
+    private JMenu contador;
 
     /**
      * Construtor da classe Server; inicializa as variáveis nome e txt como
@@ -29,11 +28,11 @@ public class RecebeMsg implements Runnable {
      *
      * @param flag
      */
-    public RecebeMsg(EditorDeTexto ed, ObjectInputStream in, JTextArea visor, boolean abriu) {
+    public RecebeMsg(EditorDeTexto ed, ObjectInputStream in, JTextArea visor, JMenu contador) {
         this.ed = ed;
         this.in = in;
         this.visor = visor;
-        this.abriu = abriu;
+        this.contador = contador;
     }
 
     /**
@@ -45,16 +44,20 @@ public class RecebeMsg implements Runnable {
     public void run() {
         while (!Thread.interrupted()) {
             try {
+                int cont = in.readInt();
+                System.out.println(cont);
                 String str = in.readUTF();
                 ed.getT().getText().clear();
                 ed.getRefaz().clear();
                 ed.getDesfaz().clear();
                 ed.inseretexto(str);
                 visor.setText(str);
+                contador.setName("Clientes : " + String.valueOf(cont));
             } catch (IOException ex) {
-                
-                //ARRUMAR ESSA PARTE DE ABRIU AQUI PARA O DISCONNECT DO SERVIDOR
-                this.abriu = false;
+                ed.getT().getText().clear();
+                ed.getRefaz().clear();
+                ed.getDesfaz().clear();
+                visor.setText("");
                 return;
             }
         }

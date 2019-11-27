@@ -60,13 +60,25 @@ public class RepassaSalvaTxt implements Runnable {
 
     @Override
     public void run() {
+        int cont = 0;
         while (!Thread.interrupted()) {
+            cont = 0;
+            for(int i = 0; i < clientes.size(); i++)
+            {
+                if(clientes.get(i).nome.equals(this.nome))
+                    cont = cont + 1;
+            }
+            
             try {
                 String txt = input.readUTF();
                 for (RepassaSalvaTxt i : clientes) {
                     if (i.nome.equals(this.nome) && (i.input != this.input)) {
+                        i.output.writeInt(cont);
                         i.output.writeUTF(txt);
                         i.output.flush();
+                    }else{
+                        if(i.input == this.input)
+                            i.output.writeInt(cont);
                     }
                 }
 

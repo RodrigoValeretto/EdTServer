@@ -65,6 +65,7 @@ public class GUI extends JFrame {
     private JMenuItem save = new JMenuItem("Salvar");
     private JMenuItem open = new JMenuItem("Abrir");
     private JMenuItem disconnect = new JMenuItem("Desconectar");
+    private JMenu contador = new JMenu("Clientes :");
 
     /**
      * Construtor da classe GUI; inicializa as variáveis que definem a interface
@@ -107,6 +108,7 @@ public class GUI extends JFrame {
         scroll2.setPreferredSize(new Dimension(640, 320));
 
         barra.add(file);
+        barra.add(contador);
         file.add(open);
         file.add(save);
         file.add(disconnect);
@@ -117,10 +119,107 @@ public class GUI extends JFrame {
         this.add(scroll2, BorderLayout.NORTH);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
+
+        try {
+            cliente = new Client();
+            Vector<String> nomes = (Vector) cliente.in.readObject();
+            JFrame janela = new JFrame("Escolha o arquivo ou crie um novo");
+            JButton abrir = new JButton("Abrir");
+            JButton novo = new JButton("Novo arquivo");
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(1, 2));
+            DefaultComboBoxModel model = new DefaultComboBoxModel(nomes.toArray());
+            JComboBox box = new JComboBox();
+            box.setModel(model);
+            panel.add(abrir);
+            panel.add(novo);
+            janela.setLayout(new BorderLayout());
+            janela.add(box, BorderLayout.NORTH);
+            janela.add(panel, BorderLayout.SOUTH);
+            janela.setSize(200, 80);
+            janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            janela.setVisible(true);
+
+            abrir.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e1) {
+                    String str = "";
+                    try {
+                        cliente.out.writeInt(0);
+                        cliente.out.flush();
+                        cliente.out.writeUTF(box.getSelectedItem().toString());
+                        cliente.out.flush();
+                        str = cliente.in.readUTF();
+
+                        ed.getT().getText().clear();
+                        ed.getRefaz().clear();
+                        ed.getDesfaz().clear();
+                        if (!str.isEmpty()) {
+                            ed.inseretexto(str);
+                            visor.setText(str);
+                        }
+                        janela.setVisible(false);
+                        rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
+                        t = new Thread(rmsg);
+                        t.start();
+                        abriu = true;
+                    } catch (IOException ex) {
+                        Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+            });
+
+            novo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        cliente.out.writeInt(1);
+                        cliente.out.flush();
+                        JFrame janela2 = new JFrame("Digite o nome do arquivo que deseja salvar:");
+                        JButton salvar = new JButton("Salvar");
+                        JTextField nome = new JTextField(25);
+                        janela2.setLayout(new BorderLayout());
+                        janela2.add(nome, BorderLayout.NORTH);
+                        janela2.add(salvar, BorderLayout.SOUTH);
+                        janela2.pack();
+                        janela2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        janela2.setVisible(true);
+                        salvar.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    cliente.out.writeUTF(nome.getText());
+                                    cliente.out.flush();
+                                    cliente.out.writeUTF(visor.getText());
+                                    cliente.out.flush();
+                                    rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
+                                    t = new Thread(rmsg);
+                                    t.start();
+                                    abriu = true;
+                                    janela.setVisible(false);
+                                    janela2.setVisible(false);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        });
+                    } catch (IOException ex) {
+                    }
+                }
+            });
+
+        } catch (FileNotFoundException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
+        }
 
         undo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent a) {
+                if (!t.isAlive()) {
+                    abriu = false;
+                }
                 String str = "";
                 lock.lock();
                 try {
@@ -147,6 +246,9 @@ public class GUI extends JFrame {
         redo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent a) {
+                if (!t.isAlive()) {
+                    abriu = false;
+                }
                 String str = "";
                 lock.lock();
                 try {
@@ -174,6 +276,9 @@ public class GUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    if (!t.isAlive()) {
+                        abriu = false;
+                    }
                     String str = "";
                     lock.lock();
                     try {
@@ -205,6 +310,9 @@ public class GUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    if (!t.isAlive()) {
+                        abriu = false;
+                    }
                     String str = "";
                     lock.lock();
                     try {
@@ -254,6 +362,9 @@ public class GUI extends JFrame {
         cut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!t.isAlive()) {
+                    abriu = false;
+                }
                 lock.lock();
                 try {
                     recortar();
@@ -276,6 +387,9 @@ public class GUI extends JFrame {
         paste.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!t.isAlive()) {
+                    abriu = false;
+                }
                 lock.lock();
                 try {
                     colar();
@@ -296,6 +410,10 @@ public class GUI extends JFrame {
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!t.isAlive()) {
+                    abriu = false;
+                }
+
                 if (abriu) {
                     return;
                 }
@@ -312,6 +430,7 @@ public class GUI extends JFrame {
                     janela.add(salvar, BorderLayout.SOUTH);
                     janela.pack();
                     janela.setVisible(true);
+                    janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     salvar.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -320,7 +439,7 @@ public class GUI extends JFrame {
                                 cliente.out.flush();
                                 cliente.out.writeUTF(visor.getText());
                                 cliente.out.flush();
-                                rmsg = new RecebeMsg(ed, cliente.in, visor, abriu);
+                                rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
                                 t = new Thread(rmsg);
                                 t.start();
                                 abriu = true;
@@ -339,6 +458,10 @@ public class GUI extends JFrame {
         disconnect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!abriu || !t.isAlive()) {
+                    abriu = false;
+                    return;
+                }
                 try {
                     ed.getT().getText().clear();
                     ed.getDesfaz().clear();
@@ -353,7 +476,8 @@ public class GUI extends JFrame {
                     cliente.out.close();
                     cliente.socket.close();
                 } catch (IOException ex) {
-                } /*finally {
+                }
+                /*finally {
                     try {
                         cliente = new Client();
                     } catch (IOException ex) {
@@ -366,6 +490,10 @@ public class GUI extends JFrame {
         open.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!t.isAlive()) {
+                    abriu = false;
+                }
+
                 if (abriu) {
                     return;
                 }
@@ -384,7 +512,7 @@ public class GUI extends JFrame {
                     janela.add(box, BorderLayout.NORTH);
                     janela.add(abrir, BorderLayout.SOUTH);
                     janela.setSize(200, 80);
-                    janela.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+                    janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     janela.setVisible(true);
 
                     abrir.addActionListener(new ActionListener() {
@@ -406,7 +534,7 @@ public class GUI extends JFrame {
                                     visor.setText(str);
                                 }
                                 janela.setVisible(false);
-                                rmsg = new RecebeMsg(ed, cliente.in, visor, abriu);
+                                rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
                                 t = new Thread(rmsg);
                                 t.start();
                                 abriu = true;
@@ -416,6 +544,7 @@ public class GUI extends JFrame {
                         }
 
                     });
+                    
                 } catch (FileNotFoundException ex) {
                 } catch (IOException | ClassNotFoundException ex) {
                 }

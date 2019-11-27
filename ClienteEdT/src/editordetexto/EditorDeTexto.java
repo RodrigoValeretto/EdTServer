@@ -231,7 +231,7 @@ public class EditorDeTexto extends JFrame{
         GUI g;
         try {
             g = new GUI(e);
-            g.setVisible(true);
+            //g.setVisible(true);
         } catch (IOException ex) {
             Logger.getLogger(EditorDeTexto.class.getName()).log(Level.SEVERE, null, ex);
         }
