@@ -47,3 +47,9 @@ digitado no campo de comandos o nome do arquivo que deseja ser salvo.
 Desconectar: Clicar no botão "Desconectar" finaliza a thread que estava em execução esperando para salvar
 o arquivo que estava sendo editado e também limpa quaisquer vestígios do arquivo que estava sendo editado,
 como se abrisse um novo arquivo vazio.
+
+Na Terceira parte foi implementada a função de comunicação entre clientes através de um servidor.
+Se não houver nenhum arquivo criado disponivel e o usuário tentar abrir o arquivo, o cliente finalizará.
+Caso o usuário feche a pagina de nomear arquivo ou escolher, o cliente também finalizará.
+O contador de clientes apenar atualiza ao enviar uma mensagem do cliente, e às vezes ele recebe um delay
+sendo necessário enviar mais de uma mensagem para atualizar.

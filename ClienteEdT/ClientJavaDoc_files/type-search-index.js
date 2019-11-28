@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"editordetexto","l":"Alteracoes"},{"p":"editordetexto","l":"Client"},{"p":"editordetexto","l":"EditorDeTexto"},{"p":"editordetexto","l":"GUI"},{"p":"editordetexto","l":"RecebeCont"},{"p":"editordetexto","l":"RecebeMsg"},{"p":"editordetexto","l":"Texto"}]
