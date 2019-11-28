@@ -44,7 +44,9 @@ public class GUI extends JFrame {
     private JFileChooser choose;
     private Client cliente;
     private RecebeMsg rmsg;
+    private RecebeCont rcont;
     private Thread t;
+    private Thread t2;
     private Lock lock = new ReentrantLock();
     private EditorDeTexto ed;
     private String copiado;
@@ -123,6 +125,9 @@ public class GUI extends JFrame {
 
         try {
             cliente = new Client();
+            rcont = new RecebeCont(contador, cliente.in2);
+            t2 = new Thread(rcont);
+            t2.start();
             Vector<String> nomes = (Vector) cliente.in.readObject();
             JFrame janela = new JFrame("Escolha o arquivo ou crie um novo");
             JButton abrir = new JButton("Abrir");
@@ -137,7 +142,7 @@ public class GUI extends JFrame {
             janela.setLayout(new BorderLayout());
             janela.add(box, BorderLayout.NORTH);
             janela.add(panel, BorderLayout.SOUTH);
-            janela.setSize(200, 80);
+            janela.setSize(250, 80);
             janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             janela.setVisible(true);
 
@@ -168,7 +173,6 @@ public class GUI extends JFrame {
                         Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-
             });
 
             novo.addActionListener(new ActionListener() {

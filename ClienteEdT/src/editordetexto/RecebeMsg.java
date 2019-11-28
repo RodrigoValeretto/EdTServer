@@ -44,15 +44,12 @@ public class RecebeMsg implements Runnable {
     public void run() {
         while (!Thread.interrupted()) {
             try {
-                int cont = in.readInt();
-                System.out.println(cont);
                 String str = in.readUTF();
                 ed.getT().getText().clear();
                 ed.getRefaz().clear();
                 ed.getDesfaz().clear();
                 ed.inseretexto(str);
                 visor.setText(str);
-                contador.setName("Clientes : " + String.valueOf(cont));
             } catch (IOException ex) {
                 ed.getT().getText().clear();
                 ed.getRefaz().clear();

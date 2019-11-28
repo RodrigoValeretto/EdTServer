@@ -33,6 +33,7 @@ public class ServerEdT extends JFrame {
     private JButton disc = new JButton("Desconectar");
     private Vector<String> nomes;
     private ServerSocket server;
+    private ServerSocket server2;
     private Vector<RepassaSalvaTxt> clientes;
     private Vector<Thread> ts;
 
@@ -46,6 +47,7 @@ public class ServerEdT extends JFrame {
         this.ts = new Vector();
 
         server = new ServerSocket(1234);
+        server2 = new ServerSocket(1235);
         nomes = new Vector();
         
         disc.addActionListener(new ActionListener(){
@@ -115,9 +117,13 @@ public class ServerEdT extends JFrame {
             System.out.println("Aguardando conexões...");
 
             Socket socket = edt.server.accept();
+            
+            Socket socket2 = edt.server2.accept();
 
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            
+            ObjectOutputStream out2 = new ObjectOutputStream(socket2.getOutputStream());
 
             System.out.println("Conectado");
             
@@ -138,7 +144,7 @@ public class ServerEdT extends JFrame {
                     }
                     out.writeUTF(edt.abrir(nome));
                     out.flush();
-                    cliente = new RepassaSalvaTxt(edt.clientes, nome, socket, in, out);
+                    cliente = new RepassaSalvaTxt(edt.clientes, nome, socket, in, out, out2);
                     edt.clientes.add(cliente);
                     t = new Thread(cliente);
                     t.start();
@@ -155,7 +161,7 @@ public class ServerEdT extends JFrame {
                     if (!achou) {
                         edt.nomes.add(nome);
                     }
-                    cliente = new RepassaSalvaTxt(edt.clientes, nome, socket, in, out);
+                    cliente = new RepassaSalvaTxt(edt.clientes, nome, socket, in, out, out2);
                     edt.clientes.add(cliente);
                     t = new Thread(cliente);
                     edt.ts.add(t);

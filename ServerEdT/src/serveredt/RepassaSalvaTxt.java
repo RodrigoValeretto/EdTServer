@@ -25,13 +25,15 @@ public class RepassaSalvaTxt implements Runnable {
     private Socket socket;
     private ObjectInputStream input;
     private ObjectOutputStream output;
+    private ObjectOutputStream output2;
 
-    public RepassaSalvaTxt(Vector<RepassaSalvaTxt> clientes, String nome, Socket socket, ObjectInputStream input, ObjectOutputStream output) {
+    public RepassaSalvaTxt(Vector<RepassaSalvaTxt> clientes, String nome, Socket socket, ObjectInputStream input, ObjectOutputStream output, ObjectOutputStream output2) {
         this.clientes = clientes;
         this.nome = nome;
         this.socket = socket;
         this.input = input;
         this.output = output;
+        this.output2 = output2;
     }
 
     public Socket getSocket() {
@@ -73,12 +75,17 @@ public class RepassaSalvaTxt implements Runnable {
                 String txt = input.readUTF();
                 for (RepassaSalvaTxt i : clientes) {
                     if (i.nome.equals(this.nome) && (i.input != this.input)) {
-                        i.output.writeInt(cont);
+                        i.output2.writeInt(cont);
+                        i.output2.flush();
                         i.output.writeUTF(txt);
                         i.output.flush();
                     }else{
                         if(i.input == this.input)
-                            i.output.writeInt(cont);
+                        {
+                            i.output2.writeInt(cont);
+                            i.output2.flush();
+                        }
+                        
                     }
                 }
 
@@ -91,6 +98,7 @@ public class RepassaSalvaTxt implements Runnable {
                     clientes.remove(this);
                     this.input.close();
                     this.output.close();
+                    this.output2.close();
                     this.socket.close();
                 } catch (IOException ex1) {
                 } finally {
@@ -101,6 +109,7 @@ public class RepassaSalvaTxt implements Runnable {
                     clientes.remove(this);
                     this.input.close();
                     this.output.close();
+                    this.output2.close();
                     this.socket.close();
                 } catch (IOException ex1) {
                     Logger.getLogger(RepassaSalvaTxt.class.getName()).log(Level.SEVERE, null, ex1);

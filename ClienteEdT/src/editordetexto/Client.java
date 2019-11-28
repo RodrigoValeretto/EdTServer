@@ -15,14 +15,20 @@ import java.net.Socket;
  */
 public class Client {
     Socket socket;
+    Socket socket2;
     ObjectInputStream in;
+    ObjectInputStream in2;
     ObjectOutputStream out;
     
     public Client() throws IOException
     {
         socket = new Socket("127.0.0.1", 1234);
 
+        socket2 = new Socket("127.0.0.1", 1235);
+        
         out = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
+        
+        in2 = new ObjectInputStream(socket2.getInputStream());
     }
 }
