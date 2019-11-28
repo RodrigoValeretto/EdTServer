@@ -25,8 +25,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 
 /**
- *
- * @author rodrigo
+ * Classe que controla o server e a conexão servidor-cliente.
+ * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
 public class ServerEdT extends JFrame {
 
@@ -36,7 +36,11 @@ public class ServerEdT extends JFrame {
     private ServerSocket server2;
     private Vector<RepassaSalvaTxt> clientes;
     private Vector<Thread> ts;
-
+    
+    /**
+     * Contrutor da classe ServerEdT.
+     * @throws IOException 
+     */
     public ServerEdT() throws IOException {
         super("Servidor EdT");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -73,7 +77,9 @@ public class ServerEdT extends JFrame {
             }
         });
     }
-
+    /**
+     * Método que escreve num arquivo os nomes dos arquivos disponíveis para serem editados.
+     */
     public void EscreveNomesNoReg() {
         try {
             BufferedWriter fp = new BufferedWriter(new FileWriter("ArquivosDoServer.txt"));
@@ -84,7 +90,9 @@ public class ServerEdT extends JFrame {
         } catch (IOException ex) {
         }
     }
-
+    /**
+     * Método que lê os nomes dos arquivos disponíveis.
+     */
     public void LeNomesDoReg() {
         try {
             this.nomes.clear();
@@ -101,7 +109,8 @@ public class ServerEdT extends JFrame {
     }
 
     /**
-     * @param args the command line arguments
+     * Programa principal do server; fica esperando por conexões de clientes.
+     * @param args
      */
     public static void main(String[] args) throws IOException {
         ServerEdT edt = new ServerEdT();
@@ -147,6 +156,7 @@ public class ServerEdT extends JFrame {
                     cliente = new RepassaSalvaTxt(edt.clientes, nome, socket, in, out, out2);
                     edt.clientes.add(cliente);
                     t = new Thread(cliente);
+                    edt.ts.add(t);
                     t.start();
                     break;
                 case 1:
@@ -187,7 +197,11 @@ public class ServerEdT extends JFrame {
              */
         }
     }
-
+    /**
+     * Abre o arquivo selecionado e cria o texto que será enviado para o cliente.
+     * @param name
+     * @return 
+     */
     public String abrir(String name) {
         String str = "";
         int i;

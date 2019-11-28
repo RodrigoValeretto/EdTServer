@@ -7,13 +7,11 @@ package editordetexto;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JMenu;
 
 /**
- *
- * @author rodrigo
+ * Classe que controla a recepção do número de clientes editando determinado texto.
+ * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
 public class RecebeCont implements Runnable {
 
@@ -24,13 +22,14 @@ public class RecebeCont implements Runnable {
         this.contador = cont;
         this.in2 = in2;
     }
-
+    /**
+     * Thread que controla a contagem.
+     */
     @Override
     public void run() {
         while (!Thread.interrupted()) {
             try {
                 int cont = in2.readInt();
-                System.out.println(cont);
                 contador.setText("Clientes : " + String.valueOf(cont));
             } catch (IOException ex) {
                 contador.setText("Clientes : ");

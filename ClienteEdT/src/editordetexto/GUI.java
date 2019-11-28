@@ -153,7 +153,10 @@ public class GUI extends JFrame {
                     try {
                         cliente.out.writeInt(0);
                         cliente.out.flush();
-                        cliente.out.writeUTF(box.getSelectedItem().toString());
+                        if((box.getSelectedItem() != null))
+                            cliente.out.writeUTF(box.getSelectedItem().toString());
+                        else
+                            System.exit(0);
                         cliente.out.flush();
                         str = cliente.in.readUTF();
 
@@ -164,6 +167,8 @@ public class GUI extends JFrame {
                             ed.inseretexto(str);
                             visor.setText(str);
                         }
+                        cliente.out.writeUTF(visor.getText());
+                        cliente.out.flush();
                         janela.setVisible(false);
                         rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
                         t = new Thread(rmsg);
@@ -196,7 +201,11 @@ public class GUI extends JFrame {
                                 try {
                                     cliente.out.writeUTF(nome.getText());
                                     cliente.out.flush();
-                                    cliente.out.writeUTF(visor.getText());
+                                    if (!visor.getText().isEmpty()) {
+                                        cliente.out.writeUTF(visor.getText());
+                                    } else {
+                                        cliente.out.writeUTF("");
+                                    }
                                     cliente.out.flush();
                                     rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
                                     t = new Thread(rmsg);
@@ -441,11 +450,18 @@ public class GUI extends JFrame {
                             try {
                                 cliente.out.writeUTF(nome.getText());
                                 cliente.out.flush();
-                                cliente.out.writeUTF(visor.getText());
+                                if (!visor.getText().isEmpty()) {
+                                    cliente.out.writeUTF(visor.getText());
+                                } else {
+                                    cliente.out.writeUTF("");
+                                }
                                 cliente.out.flush();
                                 rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
                                 t = new Thread(rmsg);
                                 t.start();
+                                rcont = new RecebeCont(contador, cliente.in2);
+                                t2 = new Thread(rcont);
+                                t2.start();
                                 abriu = true;
                                 janela.setVisible(false);
                             } catch (IOException ex) {
@@ -476,18 +492,14 @@ public class GUI extends JFrame {
                     choose = null;
                     abriu = false;
                     t.interrupt();
+                    t2.interrupt();
                     cliente.in.close();
+                    cliente.in2.close();
                     cliente.out.close();
                     cliente.socket.close();
+                    cliente.socket2.close();
                 } catch (IOException ex) {
                 }
-                /*finally {
-                    try {
-                        cliente = new Client();
-                    } catch (IOException ex) {
-                        Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }*/
             }
         });
 
@@ -537,10 +549,15 @@ public class GUI extends JFrame {
                                     ed.inseretexto(str);
                                     visor.setText(str);
                                 }
+                                cliente.out.writeUTF(visor.getText());
+                                cliente.out.flush();
                                 janela.setVisible(false);
                                 rmsg = new RecebeMsg(ed, cliente.in, visor, contador);
                                 t = new Thread(rmsg);
                                 t.start();
+                                rcont = new RecebeCont(contador, cliente.in2);
+                                t2 = new Thread(rcont);
+                                t2.start();
                                 abriu = true;
                             } catch (IOException ex) {
                                 Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -548,7 +565,7 @@ public class GUI extends JFrame {
                         }
 
                     });
-                    
+
                 } catch (FileNotFoundException ex) {
                 } catch (IOException | ClassNotFoundException ex) {
                 }

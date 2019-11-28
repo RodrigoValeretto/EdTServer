@@ -10,8 +10,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 /**
- *
- * @author rodrigo
+ * Controla a conexão de um cliente.
+ * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
 public class Client {
     Socket socket;
@@ -20,6 +20,10 @@ public class Client {
     ObjectInputStream in2;
     ObjectOutputStream out;
     
+    /**
+     * Construtor da classe Client.
+     * @throws IOException 
+     */
     public Client() throws IOException
     {
         socket = new Socket("127.0.0.1", 1234);

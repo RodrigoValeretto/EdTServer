@@ -15,8 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author rodrigo
+ * Classe que controla o repasse das modificações do texto para outros clientes e o salvamento do arquivo.
+ * @author Rodrigo Augusto Valeretto e Leonardo Cerce Guioto
  */
 public class RepassaSalvaTxt implements Runnable {
 
@@ -26,7 +26,15 @@ public class RepassaSalvaTxt implements Runnable {
     private ObjectInputStream input;
     private ObjectOutputStream output;
     private ObjectOutputStream output2;
-
+    /**
+     * Construtor da classe RepassaSalvaTxt; inicializa as variáveis necessárias.
+     * @param clientes
+     * @param nome
+     * @param socket
+     * @param input
+     * @param output
+     * @param output2 
+     */
     public RepassaSalvaTxt(Vector<RepassaSalvaTxt> clientes, String nome, Socket socket, ObjectInputStream input, ObjectOutputStream output, ObjectOutputStream output2) {
         this.clientes = clientes;
         this.nome = nome;
@@ -59,7 +67,9 @@ public class RepassaSalvaTxt implements Runnable {
     public void setOutput(ObjectOutputStream output) {
         this.output = output;
     }
-
+    /**
+     * Faz a contagem do número de usuários num arquivo e controla o envio de modificações para outros clientes.
+     */
     @Override
     public void run() {
         int cont = 0;

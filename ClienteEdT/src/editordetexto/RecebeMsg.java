@@ -25,8 +25,6 @@ public class RecebeMsg implements Runnable {
     /**
      * Construtor da classe Server; inicializa as variáveis nome e txt como
      * strings vazias e flag como "true".
-     *
-     * @param flag
      */
     public RecebeMsg(EditorDeTexto ed, ObjectInputStream in, JTextArea visor, JMenu contador) {
         this.ed = ed;
@@ -48,7 +46,8 @@ public class RecebeMsg implements Runnable {
                 ed.getT().getText().clear();
                 ed.getRefaz().clear();
                 ed.getDesfaz().clear();
-                ed.inseretexto(str);
+                if(!str.isEmpty())
+                    ed.inseretexto(str);
                 visor.setText(str);
             } catch (IOException ex) {
                 ed.getT().getText().clear();
